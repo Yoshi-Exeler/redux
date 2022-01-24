@@ -1,0 +1,7 @@
+{
+  "name": "redux",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

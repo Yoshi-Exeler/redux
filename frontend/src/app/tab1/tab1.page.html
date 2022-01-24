@@ -1,0 +1,31 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Files
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Files</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-list style="padding: 0; margin: 0;">
+    <ion-item *ngFor="let folder of mockFolders" class="clickable">
+      <ion-icon color="primary" style="padding-right: 0.5em;" name="folder-outline"></ion-icon>
+      <ion-label>{{folder.Name}}</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list style="padding: 0; margin: 0;">
+    <ion-item *ngFor="let file of mockFiles" class="clickable">
+      <ion-icon color="primary" style="padding-right: 0.5em;" [name]="getIconForType(file.Extension)"></ion-icon>
+      <ion-label>{{file.Name}}</ion-label> 
+    </ion-item>
+  </ion-list>
+  
+
+</ion-content>

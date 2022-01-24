@@ -1,0 +1,9 @@
+.clickable:hover {
+  background-color: lightgrey;
+  --ion-background-color: rgb(245, 251, 255);
+}
+
+.clickable {
+  background-color: white;
+  --ion-background-color: white;
+}
