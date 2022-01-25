@@ -1,8 +1,18 @@
 package main
 
-import "redux/pkg/api"
+import (
+	"flag"
+	"redux/pkg/api"
+)
 
 func main() {
-	api.Init("./cloudstorage/")
+	// declare our cli variables
+	fsRoot := flag.String("fs-root", "./reduxfs/", "the path to the root directory of the cloud's filesystem")
+	apiPort := flag.String("api-port", "8050", "the port on which the json-rpc api will listen")
+
+	flag.Parse()
+
+	// initialize our api server with the config we got from CLI
+	api.Init(*fsRoot, *apiPort)
 	api.GetInstance().Serve()
 }

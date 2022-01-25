@@ -12,8 +12,9 @@ type Folder struct {
 }
 
 type User struct {
-	Username     string
-	PasswordHash string
+	ID           uint64 `gorm:"primaryKey"`
+	Username     string `gorm:"not null"`
+	PasswordHash string `gorm:"not null"`
 }
 
 type FolderContent struct {

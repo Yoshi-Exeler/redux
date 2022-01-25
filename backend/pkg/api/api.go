@@ -4,19 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"redux/pkg/model"
 	"strings"
 	"sync"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var instance *APIServer
 
 var once sync.Once
 
-func Init(fsroot string) {
+func Init(fsroot string, apiPort string) {
 	once.Do(func() {
-		instance = &APIServer{FSRoot: fsroot}
+		db, err := gorm.Open(sqlite.Open(fsroot+"/redux_db.sqlite"), &gorm.Config{})
+		if err != nil {
+			log.Fatalf("[REDUX] failes to open sqlite database")
+		}
+		instance = &APIServer{FSRoot: fsroot + "/files", APIPort: apiPort, DB: db}
 	})
 }
 
@@ -25,7 +33,9 @@ func GetInstance() *APIServer {
 }
 
 type APIServer struct {
-	FSRoot string
+	FSRoot  string
+	APIPort string
+	DB      *gorm.DB
 }
 
 func getFolderContent(path string) (*model.FolderContent, error) {
