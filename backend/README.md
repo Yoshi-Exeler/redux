@@ -1,1 +1,1 @@
-A dead simple cloud that be used to manage files across multiple devices
+A dead simple cloud that can be used to manage files across multiple devices
