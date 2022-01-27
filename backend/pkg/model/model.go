@@ -15,6 +15,7 @@ type User struct {
 	ID           uint64 `gorm:"primaryKey"`
 	Username     string `gorm:"not null"`
 	PasswordHash string `gorm:"not null"`
+	Token        string `gorm:"not null"`
 }
 
 type FolderContent struct {
@@ -24,4 +25,14 @@ type FolderContent struct {
 
 type FolderContentGetRequest struct {
 	Path string
+}
+
+type AuthenticationRequest struct {
+	Username string
+	Password string
+}
+
+type AuthenticationResponse struct {
+	Token string
+	Error string
 }

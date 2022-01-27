@@ -1,10 +1,13 @@
 package api
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"redux/pkg/model"
 	"strings"
@@ -75,21 +78,73 @@ func handleGetFolderContent(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("[REDUX] request dropped, could not read folder content:", err)
 		return
 	}
-	// files := []model.File{
-	// 	model.File{Name: "Shrek", Extension: "mp4", Path: "./Shrek.mp4"},
-	// 	model.File{Name: "Finanzen", Extension: "txt", Path: "./Finanzen.txt"},
-	// }
-	// folders := []model.Folder{
-	// 	model.Folder{Name: "Arbeit", Path: "./Arbeit/"},
-	// 	model.Folder{Name: "Projekte", Path: "./test/Projekte"},
-	// }
-	// content := model.FolderContent{
-	// 	Files:   files,
-	// 	Folders: folders,
-	// }
 	bin, _ := json.Marshal(content)
 	fmt.Println(string(bin))
 	fmt.Fprint(w, string(bin))
+}
+
+func handleAuthenticate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	buff, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, cannot read body:", err)
+		return
+	}
+	fmt.Println(">>", string(buff))
+	var req model.AuthenticationRequest
+	err = json.Unmarshal(buff, &req)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
+		return
+	}
+	token, err := instance.Authenticate(req.Username, req.Password)
+	if err != nil {
+
+	}
+	fmt.Printf("[REDUX] user %v autheticated", req.Username)
+	fmt.Fprint(w, string(bin))
+}
+
+func (a *APIServer) Authenticate(username string, password string) (string, error) {
+	// hash the password
+	hashBytes := sha256.Sum256([]byte(password))
+	// hexencode the hash so we can store/compare in the database
+	encodedHash := []byte{}
+	hex.Encode(encodedHash, hashBytes[:])
+	hashStr := string(encodedHash)
+	// check if there is a user with this username and password
+	var targetUser model.User
+	err := a.DB.Where("username = ? AND password_hash = ?", username, hashStr).First(&targetUser).Error
+	if err != nil {
+		return "", fmt.Errorf("error: authentication failed")
+	}
+	// generate a token for this user
+	tokenBytes := make([]byte, 32)
+	_, err = rand.Read(tokenBytes)
+	if err != nil {
+		return "", fmt.Errorf("error: cannot generate token")
+	}
+	// update the users stored token
+	encodedToken := []byte{}
+	hex.Encode(encodedToken, tokenBytes[:])
+	targetUser.Token = string(encodedToken)
+	err = a.DB.Save(&encodedToken).Error
+	if err != nil {
+		return "", fmt.Errorf("error: cannot update token")
+	}
+	// yield the users token
+	return string(encodedToken), nil
+}
+
+func (a *APIServer) GetUserFromToken(token string) (*model.User, error) {
+	// try to query a user for the specified token
+	var targetUser model.User
+	err := a.DB.Where("token = ?", token).First(&targetUser).Error
+	if err != nil {
+		return nil, fmt.Errorf("error: could not find a user for the specified token")
+	}
+	// yield the user
+	return &targetUser, nil
 }
 
 func (a *APIServer) Serve() {
