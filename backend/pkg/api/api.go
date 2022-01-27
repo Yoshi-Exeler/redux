@@ -99,9 +99,12 @@ func handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	}
 	token, err := instance.Authenticate(req.Username, req.Password)
 	if err != nil {
-
+		fmt.Println("[REDUX] request dropped, cannot auth", err)
+		return
 	}
 	fmt.Printf("[REDUX] user %v autheticated", req.Username)
+	resp := model.AuthenticationResponse{Token: token}
+	bin, _ := json.Marshal(resp)
 	fmt.Fprint(w, string(bin))
 }
 
