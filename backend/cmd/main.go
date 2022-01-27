@@ -15,4 +15,6 @@ func main() {
 	// initialize our api server with the config we got from CLI
 	api.Init(*fsRoot, *apiPort)
 	api.GetInstance().Serve()
+
+	select {}
 }

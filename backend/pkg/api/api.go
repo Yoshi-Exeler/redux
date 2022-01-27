@@ -151,6 +151,7 @@ func (a *APIServer) GetUserFromToken(token string) (*model.User, error) {
 }
 
 func (a *APIServer) Serve() {
+	fmt.Println("[Redux] now serving on 8080")
 	http.HandleFunc("/getfoldercontent", handleGetFolderContent)
 	http.ListenAndServe(":8080", nil)
 }
