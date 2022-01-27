@@ -127,19 +127,25 @@ func (a *APIServer) Authenticate(username string, password string) (string, erro
 	if err != nil {
 		return "", fmt.Errorf("error: cannot generate token")
 	}
-	// update the users stored token
-	encodedToken := []byte{}
-	hex.Encode(encodedToken, tokenBytes[:])
-	targetUser.Token = string(encodedToken)
-	err = a.DB.Save(&encodedToken).Error
-	if err != nil {
-		return "", fmt.Errorf("error: cannot update token")
+	// check if the user already has a token
+	if len(targetUser.Token) == 0 {
+		// update the users stored token
+		encodedToken := []byte{}
+		hex.Encode(encodedToken, tokenBytes[:])
+		targetUser.Token = string(encodedToken)
+		err = a.DB.Save(&encodedToken).Error
+		if err != nil {
+			return "", fmt.Errorf("error: cannot update token")
+		}
 	}
 	// yield the users token
-	return string(encodedToken), nil
+	return targetUser.Token, nil
 }
 
 func (a *APIServer) GetUserFromToken(token string) (*model.User, error) {
+	if len(token) == 0 {
+		return nil, fmt.Errorf("error: token cannot be empty")
+	}
 	// try to query a user for the specified token
 	var targetUser model.User
 	err := a.DB.Where("token = ?", token).First(&targetUser).Error
