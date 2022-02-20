@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import axios from 'axios'
 import { API, File, Folder } from '../api/api';
 
 @Component({
@@ -9,17 +8,52 @@ import { API, File, Folder } from '../api/api';
 })
 export class Tab1Page {
 
-  mockFiles: File[] = []
-  mockFolders: Folder[] = []
+  files: File[] = [];
+  folders: Folder[] = [];
+  path: string = "";
+
 
   constructor() {
     this.getData();
   }
 
+  openFileContext(file: File) {
+    console.log("Placeholder for file action", file);
+  }
+
+  canNavigateBack(): boolean {
+    return this.path.length > 0
+  }
+
+  navigateIntoFolder(folder: Folder) {
+    if (this.path.length === 0) {
+      this.path = "/"
+    }
+    this.path += folder.Name + "/"
+    console.log("Navigate to ", this.path);
+    this.getData();
+  }
+
+  navigateBack() {
+    let pathSegments = this.path.split("/");
+    if (pathSegments.length === 3) {
+      this.path = "";
+      console.log("Navigate back to origin ", this.path)
+      this.getData();
+      return;
+    }
+    // navigate back to the last Segment
+    let trunc = this.path.substring(0, this.path.lastIndexOf("/"));
+    let withoutSegment = trunc.substring(0, trunc.lastIndexOf("/")) + "/";
+    this.path = withoutSegment;
+    console.log("Navigate back to path ", this.path)
+    this.getData();
+  }
+
   getData() {
-    API.GetFolderContent("/arbeit").then((resp) => {
-      this.mockFiles = resp.Files;
-      this.mockFolders = resp.Folders;
+    API.GetFolderContent(this.path).then((resp) => {
+      this.files = resp.Files;
+      this.folders = resp.Folders;
     })
   }
 

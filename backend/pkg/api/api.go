@@ -50,7 +50,7 @@ func getFolderContent(path string) (*model.FolderContent, error) {
 	folders := []model.Folder{}
 	for _, entry := range infos {
 		if entry.IsDir() {
-			folders = append(folders, model.Folder{Name: entry.Name(), Path: path + entry.Name()})
+			folders = append(folders, model.Folder{Name: entry.Name(), Path: path + "/" + entry.Name() + "/"})
 		} else {
 			files = append(files, model.File{Name: entry.Name(), Extension: strings.Split(entry.Name(), ".")[1], Path: path + entry.Name()})
 		}
