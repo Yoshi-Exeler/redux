@@ -12,6 +12,18 @@ export class API {
         let result = await promise
         return result.data;
     }
+
+    static async GetFileContent(path: string): Promise<FileContent> {
+        let promise = axios.post(this.apiurl + "/getfilecontent", JSON.stringify({ path: path }));
+        promise.catch((err) => { console.log("HTTP ERROR" + err); })
+        promise.then((resp) => { console.log("HTTP-POST: OK >>" + JSON.stringify(resp.data)); })
+        let result = await promise
+        return result.data;
+    }
+}
+
+export class FileContent {
+    Blob: string;
 }
 
 export class FolderContent {

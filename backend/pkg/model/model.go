@@ -27,6 +27,14 @@ type FolderContentGetRequest struct {
 	Path string
 }
 
+type FileContentGetRequest struct {
+	Path string
+}
+
+type FileContentGetResponse struct {
+	Blob string
+}
+
 type AuthenticationRequest struct {
 	Username string
 	Password string

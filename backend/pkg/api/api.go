@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -83,6 +84,36 @@ func handleGetFolderContent(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bin))
 }
 
+func handleGetFileContent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	buff, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, cannot read body:", err)
+		return
+	}
+	fmt.Println(">>", string(buff))
+	var req model.FileContentGetRequest
+	err = json.Unmarshal(buff, &req)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
+		return
+	}
+	fmt.Println("[REDUX] reading file", req.Path)
+	buff, err = ioutil.ReadFile(req.Path)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, could not read file with error:", err)
+		return
+	}
+	enc := base64.StdEncoding.EncodeToString([]byte(buff))
+	resp := model.FileContentGetResponse{
+		Blob: enc,
+	}
+	bin, _ := json.Marshal(resp)
+	fmt.Println(string(bin))
+	fmt.Printf("[REDUX] successfully read file %v with length %v\n", req.Path, len(buff))
+	fmt.Fprint(w, string(bin))
+}
+
 func handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	buff, err := ioutil.ReadAll(r.Body)
@@ -159,5 +190,6 @@ func (a *APIServer) GetUserFromToken(token string) (*model.User, error) {
 func (a *APIServer) Serve() {
 	fmt.Println("[Redux] now serving on 8080")
 	http.HandleFunc("/getfoldercontent", handleGetFolderContent)
+	http.HandleFunc("/getfilecontent", handleGetFileContent)
 	http.ListenAndServe(":8080", nil)
 }

@@ -50,6 +50,9 @@
         [name]="getIconForType(file.Extension)"
       ></ion-icon>
       <ion-label>{{file.Name}}</ion-label>
+      <ion-button fill="none" size="medium" (click)="onDownloadFile(file)">
+        <ion-icon color="primary" name="cloud-download-outline"></ion-icon>
+      </ion-button>
     </ion-item>
   </ion-list>
 </ion-content>

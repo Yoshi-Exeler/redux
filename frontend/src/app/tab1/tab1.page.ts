@@ -21,6 +21,31 @@ export class Tab1Page {
     console.log("Placeholder for file action", file);
   }
 
+  async onDownloadFile(file: File) {
+    // make an api call to fetch the file content
+    let blob = await API.GetFileContent(file.Path);
+    // base64 decode the blob
+    let dec = window.atob(blob.Blob);
+    // save the blob
+    this.download(dec, file.Name, "text");
+  }
+
+
+  // Function to download data to a file
+  download(data, filename, type) {
+    var file = new Blob([data], { type: type });
+    var a = document.createElement("a"),
+      url = URL.createObjectURL(file);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 0);
+  }
+
   canNavigateBack(): boolean {
     return this.path.length > 0
   }
