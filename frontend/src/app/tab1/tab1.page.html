@@ -11,6 +11,9 @@
     </ion-toolbar>
   </ion-header>
 
+  <ion-refresher slot="fixed" (ionRefresh)="this.getData($event.target)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
   <ion-list style="padding: 0; margin: 0">
     <ion-item
       [disabled]="!canNavigateBack()"
@@ -56,10 +59,21 @@
     </ion-item>
   </ion-list>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="fileInput.click()">
-      <ion-icon name="add-outline"> </ion-icon>
+    <ion-fab-button>
+      <ion-icon name="add"> </ion-icon>
     </ion-fab-button>
+    <ion-fab-list side="start">
+      <ion-fab-button (click)="fileInput.click()">
+        <ion-icon name="share"> </ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+    <ion-fab-list side="top">
+      <ion-fab-button id="folder-modal-trigger-button">
+        <ion-icon name="folder"> </ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
   </ion-fab>
+
   <input
     hidden
     type="file"

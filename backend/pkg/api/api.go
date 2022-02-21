@@ -109,7 +109,6 @@ func handleGetFileContent(w http.ResponseWriter, r *http.Request) {
 		Blob: enc,
 	}
 	bin, _ := json.Marshal(resp)
-	fmt.Println(string(bin))
 	fmt.Printf("[REDUX] successfully read file %v with length %v\n", req.Path, len(buff))
 	fmt.Fprint(w, string(bin))
 }
@@ -127,18 +126,18 @@ func handleFileUpload(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
 		return
 	}
-	fmt.Printf("[REDUX] writing file %v with length %v\n", instance.FSRoot+"/"+req.CurrentDir+req.Path, len(req.Blob))
+	fmt.Printf("[REDUX] writing file %v with length %v\n", instance.FSRoot+"/"+req.Path, len(req.Blob))
 	decoded, err := base64.StdEncoding.DecodeString(req.Blob)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could not decode file with error:", err)
 		return
 	}
-	err = ioutil.WriteFile(instance.FSRoot+"/"+req.CurrentDir+req.Path, decoded, 0644)
+	err = ioutil.WriteFile(instance.FSRoot+"/"+req.Path, decoded, 0644)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could not write file with error:", err)
 		return
 	}
-	content, err := getFolderContent(instance.FSRoot + req.CurrentDir)
+	content, err := getFolderContent(instance.FSRoot + "/" + req.CurrentDir)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could not read folder content:", err)
 		return

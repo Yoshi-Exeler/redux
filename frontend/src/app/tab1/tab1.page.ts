@@ -13,7 +13,7 @@ export class Tab1Page {
   folders: Folder[] = [];
   path: string = "";
   constructor() {
-    this.getData();
+    this.getData(null);
   }
 
   openFileContext(file: File) {
@@ -56,7 +56,7 @@ export class Tab1Page {
   navigateIntoFolder(folder: Folder) {
     this.path += folder.Name + "/"
     console.log("Navigate to ", this.path);
-    this.getData();
+    this.getData(null);
   }
 
   async onFileUpload(f: FileList) {
@@ -85,7 +85,7 @@ export class Tab1Page {
     if (pathSegments.length === 2) {
       this.path = "";
       console.log("Navigate back to origin ", this.path)
-      this.getData();
+      this.getData(null);
       return;
     }
     // navigate back to the last Segment
@@ -93,13 +93,16 @@ export class Tab1Page {
     let withoutSegment = trunc.substring(0, trunc.lastIndexOf("/")) + "/";
     this.path = withoutSegment;
     console.log("Navigate back to path ", this.path)
-    this.getData();
+    this.getData(null);
   }
 
-  getData() {
+  getData(ev: any) {
     API.GetFolderContent(this.path).then((resp) => {
       this.files = resp.Files;
       this.folders = resp.Folders;
+      if (ev != null) {
+        ev.complete();
+      }
     })
   }
 
