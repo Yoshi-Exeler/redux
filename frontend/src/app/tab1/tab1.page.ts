@@ -107,21 +107,48 @@ export class Tab1Page {
   }
 
   getIconForType(type: string): string {
-    // video types
-    if (
-      type === "mp4" ||
-      type === "mov" ||
-      type === "webm") {
+    // videos
+    if (this.in(type, ["mp4", "mov", "avi", "webm"])) {
       return "videocam-outline";
     }
+    // pictures
+    if (this.in(type, ["png", "jpg", "jpeg", "ico", "bmp"])) {
+      return "image-outline"
+    }
+    // audio
+    if (this.in(type, ["mp3", "wav", "ogg"])) {
+      return "musical-notes-outline"
+    }
+    // config files
+    if (this.in(type, ["json", "xml", "yaml", "yml", "toml", "tml", "ini"])) {
+      return "cog-outline"
+    }
+    // executables / libraries
+    if (this.in(type, ["exe", "dll", "so", "jar"])) {
+      return "hardware-chip-outline"
+    }
+    // source code
+    if (this.in(type, ["go", "js", "ts", "html", "css", "c", "cpp", "h", "rs", "py", "bat", "sh", "asm", "nasm", "java", "cs", "vbs"])) {
+      return "code-slash-outline"
+    }
     // text types
-    if (
-      type === "txt" ||
-      type === "odt" ||
-      type === "pdf") {
-      return "document-text-outline";
+    if (this.in(type, ["txt", "odt", "doc", "docx"])) {
+      return "document-text-outline"
+    }
+    // table files
+    if (this.in(type, ["csv", "ods", "xlsx"])) {
+      return "bar-chart-outline"
     }
     return "document-outline";
+  }
+
+  in(s: string, range: string[]): boolean {
+    for (let i = 0; i < range.length; i++) {
+      if (s === range[i]) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

@@ -10,9 +10,11 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"redux/pkg/model"
 	"strings"
 	"sync"
+	"syscall"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -22,13 +24,26 @@ var instance *APIServer
 
 var once sync.Once
 
-func Init(fsroot string, apiPort string) {
+func Init(fsroot string, apiPort string, userlandUID int) {
 	once.Do(func() {
 		db, err := gorm.Open(sqlite.Open(fsroot+"/redux_db.sqlite"), &gorm.Config{})
 		if err != nil {
-			log.Fatalf("[REDUX] failes to open sqlite database")
+			log.Fatal("failed to open sqlite database", err)
 		}
-		instance = &APIServer{FSRoot: fsroot + "/files", APIPort: apiPort, DB: db}
+		fmt.Println("[REDUX][INIT] sqlite database handle opened")
+		if err := os.Chdir(fsroot + "/files"); err != nil {
+			log.Fatal("Failed to change to new root", err)
+		}
+		fmt.Println("[REDUX][INIT] changed active directory into cloud root directory")
+		if err := syscall.Chroot(fsroot + "/files"); err != nil {
+			log.Fatal("Failed to chroot", err)
+		}
+		fmt.Printf("[REDUX][INIT] changeroot into %v\n", fsroot+"/files")
+		if err := syscall.Setresuid(userlandUID, userlandUID, userlandUID); err != nil {
+			log.Fatal("Failed to call setresuid", err)
+		}
+		fmt.Println("[REDUX][INIT] successfully dropped root permissions with setresuid, new uid:", os.Geteuid())
+		instance = &APIServer{APIPort: apiPort, DB: db}
 	})
 }
 
@@ -37,7 +52,6 @@ func GetInstance() *APIServer {
 }
 
 type APIServer struct {
-	FSRoot  string
 	APIPort string
 	DB      *gorm.DB
 }
@@ -74,7 +88,7 @@ func handleGetFolderContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println("[REDUX] reading folder", req.Path)
-	content, err := getFolderContent(instance.FSRoot + "/" + req.Path)
+	content, err := getFolderContent("." + "/" + req.Path)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could not read folder content:", err)
 		return
@@ -126,18 +140,18 @@ func handleFileUpload(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
 		return
 	}
-	fmt.Printf("[REDUX] writing file %v with length %v\n", instance.FSRoot+"/"+req.Path, len(req.Blob))
+	fmt.Printf("[REDUX] writing file %v with length %v\n", "."+"/"+req.Path, len(req.Blob))
 	decoded, err := base64.StdEncoding.DecodeString(req.Blob)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could not decode file with error:", err)
 		return
 	}
-	err = ioutil.WriteFile(instance.FSRoot+"/"+req.Path, decoded, 0644)
+	err = ioutil.WriteFile("."+"/"+req.Path, decoded, 0644)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could not write file with error:", err)
 		return
 	}
-	content, err := getFolderContent(instance.FSRoot + "/" + req.CurrentDir)
+	content, err := getFolderContent("." + "/" + req.CurrentDir)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could not read folder content:", err)
 		return
