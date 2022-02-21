@@ -23,6 +23,12 @@ type FolderContent struct {
 	Folders []Folder
 }
 
+type FileUploadRequest struct {
+	Path       string
+	Blob       string
+	CurrentDir string
+}
+
 type FolderContentGetRequest struct {
 	Path string
 }

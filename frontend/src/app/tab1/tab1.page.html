@@ -55,4 +55,15 @@
       </ion-button>
     </ion-item>
   </ion-list>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="fileInput.click()">
+      <ion-icon name="add-outline"> </ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+  <input
+    hidden
+    type="file"
+    #fileInput
+    (change)="onFileUpload(fileInput.files)"
+  />
 </ion-content>

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { NgxFileDropEntry } from 'ngx-file-drop';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,6 @@ import { Component } from '@angular/core';
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent {
-  constructor() {}
+  constructor() { }
+
 }

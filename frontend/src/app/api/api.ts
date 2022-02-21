@@ -3,7 +3,7 @@ import axios from "axios";
 
 export class API {
 
-    public static apiurl: string = "http://localhost:8080"
+    public static apiurl: string = "http://192.168.0.20:8080"
 
     static async GetFolderContent(path: string): Promise<FolderContent> {
         let promise = axios.post(this.apiurl + "/getfoldercontent", JSON.stringify({ path: path }));
@@ -20,6 +20,15 @@ export class API {
         let result = await promise
         return result.data;
     }
+
+    static async UploadFile(path: string, blob: string, dir: string): Promise<FolderContent> {
+        let promise = axios.post(this.apiurl + "/fileupload", JSON.stringify({ path: path, blob: blob, currentDir: dir }));
+        promise.catch((err) => { console.log("HTTP ERROR" + err); })
+        promise.then((resp) => { console.log("HTTP-POST: OK >>" + JSON.stringify(resp.data)); })
+        let result = await promise
+        return result.data;
+    }
+
 }
 
 export class FileContent {
