@@ -3,6 +3,7 @@ module redux
 go 1.17
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	gorm.io/driver/sqlite v1.2.6
 	gorm.io/gorm v1.22.5
 )

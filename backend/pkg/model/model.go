@@ -1,5 +1,7 @@
 package model
 
+import "github.com/dgrijalva/jwt-go"
+
 type File struct {
 	Name      string
 	Extension string
@@ -15,7 +17,20 @@ type User struct {
 	ID           uint64 `gorm:"primaryKey"`
 	Username     string `gorm:"not null"`
 	PasswordHash string `gorm:"not null"`
+	Salt         string `gorm:"not null"`
 	Token        string `gorm:"not null"`
+}
+
+// JWT Credentials
+type Credentials struct {
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
+// JWT Claims
+type Claims struct {
+	Username string `json:"username"`
+	jwt.StandardClaims
 }
 
 type FolderContent struct {
