@@ -12,6 +12,7 @@ export class Tab1Page {
   files: File[] = [];
   folders: Folder[] = [];
   path: string = "";
+  
   constructor() {
     this.getData(null);
   }
