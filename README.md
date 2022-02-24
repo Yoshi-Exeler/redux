@@ -1,29 +1,61 @@
 # Redux
+
 A simple home cloud with the goal to be both Simple and Secure.
 
+## State of the Projekt
+
+(1) Basic software design [DONE]
+(2) Implement filesystem navigation [DONE]
+(3) Implement file uploads/downloads [DONE]
+(4) Implement least priviledge and changeroot jail [DONE]
+(5) Implement login [PLANNED]
+(6) Implement client side file encryption/decryption [PLANNED]
+(7) Improve file upload and download api's to use url params and binary streams [PLANNED]
+(8) Add image building, add docker-compose file [PLANNED]
+(9) Add file sharing between users [PLANNED]
+(10) Add file sharing using open 'share links' [PLANNED]
+(11) Add preview actions to most file classes [PLANNED]
+...
+
+## Additional features
+
+Additional features that will be implemented eventuall but are not planned yet.
+
+(1) Calendar synchronization with the google-calendar
+(2) Simple password manager
+(3) Adding webdav to the cloud to auto sync files with local folders
+
 ## 1. Design Goals
+
 ### 1.1 Simplicity
-This cloud will implement a minimal set of features with straightforward solutions. 
+
+This cloud will implement a minimal set of features with straightforward solutions.
 One of the main goals in the implementation is to avoid feature bloat and overengineering
 and eventually reach a 'done' state in which the application will only recieve maintenance updates.
 
 ### 1.2 Security
+
 Security will be taken very seriously in this project, as it will handle potentially sensitive information.
 
 #### 1.2.1 Authorization & Authentication
-Authorization will be done by expanding a PBKDF-2 Hash of the password on the client side, which will then be combined with a salt that is unique for every user and hashed again using SHA512 on the server. 
-This guarantees that the plaintext password is never transferred over the network and the authorization secret is not present in the database.
-Once the authorization has been successfully completed, a RSA4096 Signed Json Web Token (JWT) will be issued to the user that completed the authorization. The JWT may then be used in further requests to authenticate with the server.
+
+Authorization will be done by expanding a PBKDF-2 Hash of the password on the client side, which will then be combined with a salt that is unique for every user and hashed again using SHA512 on the server.
+This guarantees that the plaintext password is never transferred over the network and the authentication secret is not present in the database.
+Once the authentication has been successfully completed, a RSA4096 Signed Json Web Token (JWT) will be issued to the user that completed the authentication. The JWT may then be used in further requests to authorize with the server.
 
 #### 1.2.2 File Encryption
+
 Files will be Encrypted/Decrypted when a file is Uploaded/Downloaded, on the client. The files will be encrypted using AES256, which will use a PBKDF-2 Hash of the users password as the encryption key. This ensures that the files on the server will never be unencrypted, and even when the server is compromised, the files are not.
 
 #### 1.2.3 Changeroot
-After opening a handle to the sqlite database file and reading the X509-Keypair, the application will use the 
+
+After opening a handle to the sqlite database file and reading the X509-Keypair, the application will use the
 changeroot syscall to jail itself to a 'virtual filesystem' located under fs-root/files/, where Fs-Root is the value of the --fs-root CLI variable. This mitigates the risk of users reading and writing parts of the filesystem, that they should not be interacting with.
 
 #### 1.2.4 Priviledge Dropping
+
 The app will drop root priviledges after entering the changeroot environment and use the setresuid syscall to switch to a user that has as little permissions as possible.
 
-#### 1.2.5 Docker
-The entire app will run inside of a docker container, which has the user with the minimal permissions already preconfigured. The container also makes the app more portable and provides an additional layer of sandboxing
+#### 1.3 Docker
+
+The preferred method of deployment is in a docker container, for better portability and ease of deployment.
