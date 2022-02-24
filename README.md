@@ -1,6 +1,6 @@
 # Redux
 
-A simple home cloud with the goal to be both Simple and Secure.
+A home cloud with the goal to be both simple and secure.
 
 ## State of the Projekt
 
