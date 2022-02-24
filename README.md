@@ -4,37 +4,37 @@ A simple home cloud with the goal to be both Simple and Secure.
 
 ## State of the Projekt
 
-(1) Basic software design [DONE]
+- Basic software design [DONE]
 
-(2) Implement filesystem navigation [DONE]
+- Implement filesystem navigation [DONE]
 
-(3) Implement file uploads/downloads [DONE]
+- Implement file uploads/downloads [DONE]
 
-(4) Implement least priviledge and changeroot jail [DONE]
+- Implement least priviledge and changeroot jail [DONE]
 
-(5) Implement login [PLANNED]
+- Implement login [PLANNED]
 
-(6) Implement client side file encryption/decryption [PLANNED]
+- Implement client side file encryption/decryption [PLANNED]
 
-(7) Improve file upload and download api's to use url params and binary streams [PLANNED]
+- Improve file upload and download api's to use url params and binary streams [PLANNED]
 
-(8) Add image building, add docker-compose file [PLANNED]
+- Add image building, add docker-compose file [PLANNED]
 
-(9) Add file sharing between users [PLANNED]
+- Add file sharing between users [PLANNED]
 
-(10) Add file sharing using open 'share links' [PLANNED]
+- Add file sharing using open 'share links' [PLANNED]
 
-(11) Add preview actions to most file classes [PLANNED]
+- Add preview actions to most file classes [PLANNED]
 
 ## Additional features
 
 Additional features that will be implemented eventuall but are not planned yet.
 
-(1) Calendar synchronization with the google-calendar
+- Calendar synchronization with the google-calendar
 
-(2) Simple password manager
+- Simple password manager
 
-(3) Adding webdav to the cloud to auto sync files with local folders
+- Adding webdav to the cloud to auto sync files with local folders
 
 ## 1. Design Goals
 
