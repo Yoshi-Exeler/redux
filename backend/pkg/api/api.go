@@ -1,13 +1,10 @@
 package api
 
 import (
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -19,9 +16,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -155,10 +150,6 @@ func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request)
  */
 func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	if !a.CheckJWTHeader(r) {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot read body:", err)
@@ -198,98 +189,6 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
  */
 func handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	buff, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Println("[REDUX] request dropped, cannot read body:", err)
-		return
-	}
-	fmt.Println(">>", string(buff))
-	var req model.AuthenticationRequest
-	err = json.Unmarshal(buff, &req)
-	if err != nil {
-		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
-		return
-	}
-	token, expiry, err := instance.authJWT(req.Username, req.Password)
-	if err != nil {
-		fmt.Println("[REDUX] request dropped, cannot auth", err)
-		return
-	}
-	// set a JWT cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   token,
-		Expires: expiry,
-	})
-	fmt.Printf("[REDUX] user %v autheticated, JWT cookie was set", req.Username)
-	resp := model.AuthenticationResponse{Token: token}
-	bin, _ := json.Marshal(resp)
-	fmt.Fprint(w, string(bin))
-}
-
-// CheckJWTHeader returns wether or not the request has a valid JWT cookie
-func (a *APIServer) CheckJWTHeader(r *http.Request) bool {
-	// read our cookie
-	c, err := r.Cookie("token")
-	if err != nil {
-		return false
-	}
-	// parse the jwt
-	tok, err := jwt.Parse(c.Value, func(jwtToken *jwt.Token) (interface{}, error) {
-		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
-		}
-		return a.Keypair.Public(), nil
-	})
-	// check for parsing errors
-	if err != nil {
-		return false
-	}
-	// check for validity
-	_, ok := tok.Claims.(jwt.MapClaims)
-	if !ok || !tok.Valid {
-		return false
-	}
-	return true
-}
-
-// authJWT performs the actual authentication and JWT generation
-func (a *APIServer) authJWT(username string, password string) (string, time.Time, error) {
-	// check if there is a user with this username and password
-	var targetUser model.User
-	err := a.DB.Where("username = ?", username).First(&targetUser).Error
-	if err != nil {
-		return "", time.Now(), fmt.Errorf("user not found")
-	}
-	// hash the password
-	hashBytes := sha256.Sum256([]byte(password + targetUser.Salt))
-	// hexencode the hash so we can store/compare in the database
-	encodedHash := []byte{}
-	hex.Encode(encodedHash, hashBytes[:])
-	hashStr := string(encodedHash)
-	// check password
-	if hashStr != targetUser.PasswordHash {
-		return "", time.Now(), fmt.Errorf("authentication failed")
-	}
-	// create credentials for the JWT
-	creds := model.Credentials{Username: username, Password: password}
-	// create a JWT expiration time
-	expirationTime := time.Now().Add(24 * time.Hour)
-	// Create JWT claims
-	claims := &model.Claims{
-		Username: creds.Username,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(), // maybe we need millis here?
-		},
-	}
-	// create our JWT
-	token := jwt.NewWithClaims(&jwt.SigningMethodRSA{Hash: crypto.BLAKE2b_512}, claims)
-	// Create the JWT string
-	tokenString, err := token.SignedString(a.Keypair)
-	if err != nil {
-		return "", time.Now(), fmt.Errorf("could not sign JWT")
-	}
-	return tokenString, expirationTime, nil
 }
 
 /* initx509 reads or creates the server's rsa keypair
