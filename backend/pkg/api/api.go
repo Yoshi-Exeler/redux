@@ -225,11 +225,13 @@ func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	var targetUser model.User
 	err = a.DB.Where("username = ?", req.Username).First(&targetUser).Error
 	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
 		fmt.Println("[REDUX] request dropped, user not found")
 		return
 	}
 	// check the password
 	if targetUser.PasswordHash != SHA256(req.Password+targetUser.Salt) {
+		w.WriteHeader(http.StatusForbidden)
 		fmt.Println("[REDUX] request dropped, invalid password")
 		return
 	}
