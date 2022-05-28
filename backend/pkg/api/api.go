@@ -49,7 +49,7 @@ func Init(fsroot string, apiPort string, userlandUID int) {
 		db.AutoMigrate(&model.User{})
 		db.Save(&model.User{
 			Username:     "yoshi.exeler",
-			PasswordHash: "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg", // test
+			PasswordHash: "Qh1DSyIpvzQvHInbwbkYnXCszKBq64yb7OhHO/vi9SQ=", // testcool_salt
 			Token:        "cool_auth_token",
 			Salt:         "cool_salt",
 		})
@@ -215,6 +215,8 @@ func (a *APIServer) checkCookie(w http.ResponseWriter, req *http.Request) (*mode
 
 func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	req, err := readAndUnmarshallTo[model.AuthenticationRequest](r.Body)
 	if err != nil {
 		// add proper http response codes here later
@@ -230,6 +232,7 @@ func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// check the password
+	fmt.Println(req.Password, targetUser.Salt, SHA256(req.Password+targetUser.Salt))
 	if targetUser.PasswordHash != SHA256(req.Password+targetUser.Salt) {
 		w.WriteHeader(http.StatusForbidden)
 		fmt.Println("[REDUX] request dropped, invalid password")
