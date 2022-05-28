@@ -3,6 +3,10 @@ module redux
 go 1.18
 
 require (
+<<<<<<< HEAD
+=======
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+>>>>>>> f7dad9d5 ([ADD] add login page)
 	github.com/glebarez/sqlite v1.4.5
 	gorm.io/gorm v1.23.5
 )

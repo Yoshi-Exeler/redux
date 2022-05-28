@@ -4,15 +4,19 @@ import { TabsPage } from './tabs.page';
 
 const routes: Routes = [
   {
-    path: 'tabs',
+    path: 'redux',
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
+        path: 'login',
+        loadChildren: () => import('../login/login.module').then(m => m.LoginPageModule)
+      },
+      {
+        path: 'files',
         loadChildren: () => import('../tab1/tab1.module').then(m => m.Tab1PageModule)
       },
       {
-        path: 'tab2',
+        path: 'calender',
         loadChildren: () => import('../tab2/tab2.module').then(m => m.Tab2PageModule)
       },
       {
@@ -21,14 +25,14 @@ const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/redux/files',
         pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/redux/files',
     pathMatch: 'full'
   }
 ];

@@ -80,7 +80,6 @@ export class Tab1Page {
 					this.files = resp.Files;
 					this.folders = resp.Folders;
 				});
-				console.log("RAW:", value);
 			});
 
 			reader.readAsBinaryString(f[i]);

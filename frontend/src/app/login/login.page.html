@@ -1,0 +1,26 @@
+<ion-content [fullscreen]="true">
+  <div style="margin: 0.5em;">
+    <ion-grid class="ion-no-padding ion-no-margin">
+      <ion-row class="ion-no-padding ion-no-margin">
+        <ion-col class="ion-no-padding ion-no-margin">
+          <h1>Redux - Login</h1>
+          <ion-list [formGroup]="fgLogin" class="ion-no-padding ion-no-margin" style="border-radius: 15px;">
+            <ion-item>
+              <ion-label>
+                Username
+              </ion-label>
+              <ion-input formControlName="username" type="text"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                Password
+              </ion-label>
+              <ion-input formControlName="password" type="password"></ion-input>
+            </ion-item>
+            <ion-button (click)="onLogin()" expand="block" color="primary" style="margin: 0.5em;">Submit</ion-button>
+          </ion-list>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>
