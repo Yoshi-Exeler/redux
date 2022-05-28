@@ -2,9 +2,11 @@ package api
 
 import (
 	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -43,6 +46,13 @@ func Init(fsroot string, apiPort string, userlandUID int) {
 		if err != nil {
 			log.Fatal("failed to open sqlite database", err)
 		}
+		db.AutoMigrate(&model.User{})
+		db.Save(&model.User{
+			Username:     "yoshi.exeler",
+			PasswordHash: "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg", // test
+			Token:        "cool_auth_token",
+			Salt:         "cool_salt",
+		})
 		fmt.Println("[REDUX][INIT] sqlite database handle opened")
 		instance = &APIServer{APIPort: apiPort, DB: db}
 		if err := os.Chdir(fsroot + "/files"); err != nil {
@@ -83,6 +93,10 @@ func getFolderContent(path string) (*model.FolderContent, error) {
  */
 func (a *APIServer) handleGetFolderContent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	_, ok := a.checkCookie(w, r)
+	if !ok {
+		return
+	}
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot read body:", err)
@@ -111,6 +125,10 @@ func (a *APIServer) handleGetFolderContent(w http.ResponseWriter, r *http.Reques
  */
 func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	_, ok := a.checkCookie(w, r)
+	if !ok {
+		return
+	}
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot read body:", err)
@@ -145,6 +163,10 @@ func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request)
  */
 func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	_, ok := a.checkCookie(w, r)
+	if !ok {
+		return
+	}
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot read body:", err)
@@ -176,8 +198,83 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bin))
 }
 
-func handleAuthenticate(w http.ResponseWriter, r *http.Request) {
+func (a *APIServer) checkCookie(w http.ResponseWriter, req *http.Request) (*model.User, bool) {
+	authCookie, err := req.Cookie("AUHT_TOKEN")
+	if err != nil {
+		w.WriteHeader(401)
+		return nil, false
+	}
+	var targetUser model.User
+	err = a.DB.Where("token = ?", authCookie.Value).First(&targetUser).Error
+	if err != nil {
+		w.WriteHeader(401)
+		return nil, false
+	}
+	return &targetUser, true
+}
+
+func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	req, err := readAndUnmarshallTo[model.AuthenticationRequest](r.Body)
+	if err != nil {
+		// add proper http response codes here later
+		fmt.Println("[REDUX] request dropped, invalid params:", err)
+		return
+	}
+	// grab the user with the specified username form the database
+	var targetUser model.User
+	err = a.DB.Where("username = ?", req.Username).First(&targetUser).Error
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, user not found")
+		return
+	}
+	// check the password
+	if targetUser.PasswordHash != SHA256(req.Password+targetUser.Salt) {
+		fmt.Println("[REDUX] request dropped, invalid password")
+		return
+	}
+	// prepare our response
+	resp := model.AuthenticationResponse{}
+
+	// set the auth cookie on the users device
+	authCookie := http.Cookie{
+		Name:    "AUTH_TOKEN",
+		Value:   targetUser.Token,
+		Expires: time.Now().AddDate(1, 0, 0),
+	}
+	http.SetCookie(w, &authCookie)
+
+	send(w, resp)
+}
+
+func SHA256(input string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(input))
+	return base64.StdEncoding.EncodeToString(hasher.Sum(nil))
+}
+
+func send[T any](writer http.ResponseWriter, value T) error {
+	bin, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	fmt.Fprint(writer, string(bin))
+	return nil
+}
+
+// readAndUnmarshallTo reads the reader until completion and then json unmarshalls into a variable of type T
+func readAndUnmarshallTo[T any](reader io.Reader) (T, error) {
+	var req T
+	buff, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return req, fmt.Errorf("[REDUX] type assertion failed")
+	}
+
+	err = json.Unmarshal(buff, &req)
+	if err != nil {
+		return req, fmt.Errorf("[REDUX] type assertion failed")
+	}
+	return req, nil
 }
 
 // Serve will begin the operation of the api server, binding to the specified port
@@ -186,5 +283,6 @@ func (a *APIServer) Serve() {
 	http.HandleFunc("/getfoldercontent", a.handleGetFolderContent)
 	http.HandleFunc("/getfilecontent", a.handleGetFileContent)
 	http.HandleFunc("/fileupload", a.handleFileUpload)
+	http.HandleFunc("/authenticate", a.handleAuthenticate)
 	http.ListenAndServe(":"+a.APIPort, nil)
 }

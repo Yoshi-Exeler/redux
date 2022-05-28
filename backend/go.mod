@@ -1,6 +1,6 @@
 module redux
 
-go 1.17
+go 1.18
 
 require (
 	github.com/glebarez/sqlite v1.4.5

@@ -18,13 +18,6 @@ type User struct {
 	Salt         string `gorm:"not null"`
 	Token        string `gorm:"not null"`
 }
-
-// JWT Credentials
-type Credentials struct {
-	Password string `json:"password"`
-	Username string `json:"username"`
-}
-
 type FolderContent struct {
 	Files   []File
 	Folders []Folder
@@ -54,6 +47,5 @@ type AuthenticationRequest struct {
 }
 
 type AuthenticationResponse struct {
-	Token string
 	Error string
 }
