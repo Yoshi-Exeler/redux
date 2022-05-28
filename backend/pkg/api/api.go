@@ -1,12 +1,9 @@
 package api
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -17,7 +14,7 @@ import (
 	"sync"
 	"syscall"
 
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -48,8 +45,6 @@ func Init(fsroot string, apiPort string, userlandUID int) {
 		}
 		fmt.Println("[REDUX][INIT] sqlite database handle opened")
 		instance = &APIServer{APIPort: apiPort, DB: db}
-		instance.initx509()
-		fmt.Println("[REDUX][INIT] x509 keypair initialized successfully")
 		if err := os.Chdir(fsroot + "/files"); err != nil {
 			log.Fatal("Failed to change to new root", err)
 		}
@@ -181,49 +176,13 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bin))
 }
 
-/* handleAuthenticate is the JSON-RPC handler for the /authenticate method
-*  This method will fetch the user with the specified username and check
-*  its password hash against the specified password hash. If the authentication
-*  was successful, a Json-Web-Token (JWT) is set as a cookie for the user, which can
-*  now be used to call other methods.
- */
 func handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 }
 
-/* initx509 reads or creates the server's rsa keypair
-*  this method should be called once during the initialization of the api server,
-*  but before the changeroot environment has been entered, since the keypair is
-*  outside the changeroot environment
- */
-func (a *APIServer) initx509() {
-	var keypair *rsa.PrivateKey
-	// check if our keypair exists
-	pemBuffer, err := ioutil.ReadFile("./private.pem")
-	if err != nil {
-		// if it does not exists, generate it
-		kp, err := rsa.GenerateKey(rand.Reader, 4096)
-		if err != nil {
-			log.Fatal("could not generate x509 keypair with error", err)
-		}
-		keypair = kp
-	} else {
-		decoded, _ := pem.Decode(pemBuffer)
-		if err != nil {
-			log.Fatal("could not decode PEM with error", err)
-		}
-		kp, err := x509.ParsePKCS1PrivateKey(decoded.Bytes)
-		if err != nil {
-			log.Fatal("could not parse x509 key with error", err)
-		}
-		keypair = kp
-	}
-	a.Keypair = *keypair
-}
-
 // Serve will begin the operation of the api server, binding to the specified port
 func (a *APIServer) Serve() {
-	fmt.Println("[Redux] now serving on 8080")
+	fmt.Println("[Redux] now serving on", a.APIPort)
 	http.HandleFunc("/getfoldercontent", a.handleGetFolderContent)
 	http.HandleFunc("/getfilecontent", a.handleGetFileContent)
 	http.HandleFunc("/fileupload", a.handleFileUpload)
