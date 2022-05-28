@@ -3,22 +3,22 @@
     <ion-grid class="ion-no-padding ion-no-margin">
       <ion-row class="ion-no-padding ion-no-margin">
         <ion-col class="ion-no-padding ion-no-margin">
-          <h1>Redux - Login</h1>
+          <h1 style="margin-left: 0.5em;">Login</h1>
           <ion-list [formGroup]="fgLogin" class="ion-no-padding ion-no-margin" style="border-radius: 15px;">
             <ion-item>
-              <ion-label>
+              <ion-label position="floating">
                 Username
               </ion-label>
               <ion-input formControlName="username" type="text"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-label>
+              <ion-label position="floating">
                 Password
               </ion-label>
               <ion-input formControlName="password" type="password"></ion-input>
             </ion-item>
-            <ion-button (click)="onLogin()" expand="block" color="primary" style="margin: 0.5em;">Submit</ion-button>
           </ion-list>
+          <ion-button (click)="onLogin()" class="ion-float-right" color="primary" style="margin-right: 0.5em; margin-top: 1em;">Submit</ion-button>
         </ion-col>
       </ion-row>
     </ion-grid>

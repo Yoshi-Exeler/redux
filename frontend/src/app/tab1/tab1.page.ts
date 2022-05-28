@@ -1,4 +1,5 @@
 import { Component } from "@angular/core";
+import { NavController } from "@ionic/angular";
 import { NgxFileDropEntry } from "ngx-file-drop";
 import { API, File, Folder, FolderContent } from "../api/api";
 
@@ -12,8 +13,13 @@ export class Tab1Page {
 	folders: Folder[] = [];
 	path: string = "";
 
-	constructor() {
+	constructor(private navcontroller: NavController) {
 		this.getData(null);
+	}
+
+	onLogout() {
+		localStorage.setItem("authToken", "");
+		this.navcontroller.navigateRoot("/redux/login");
 	}
 
 	openFileContext(file: File) {

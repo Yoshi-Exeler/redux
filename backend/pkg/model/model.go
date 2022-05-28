@@ -24,17 +24,20 @@ type FolderContent struct {
 }
 
 type FileUploadRequest struct {
+	Token      string
 	Path       string
 	Blob       string
 	CurrentDir string
 }
 
 type FolderContentGetRequest struct {
-	Path string
+	Token string
+	Path  string
 }
 
 type FileContentGetRequest struct {
-	Path string
+	Token string
+	Path  string
 }
 
 type FileContentGetResponse struct {
@@ -47,5 +50,6 @@ type AuthenticationRequest struct {
 }
 
 type AuthenticationResponse struct {
+	Token string
 	Error string
 }

@@ -3,12 +3,12 @@ import axios, { AxiosResponse } from "axios";
 
 export class API {
   public static apiurl: string = "http://192.168.0.15:8050";
+  public static token: string = "";
 
   static async GetFolderContent(path: string): Promise<FolderContent> {
     let promise = axios.post(
       this.apiurl + "/getfoldercontent",
-      JSON.stringify({ path: path }),
-      { withCredentials: true }
+      JSON.stringify({ path: path, token: localStorage.getItem('authToken') })
     );
     promise.catch((err) => {
       console.error("[API][ERROR]" + err);
@@ -23,8 +23,7 @@ export class API {
   static async GetFileContent(path: string): Promise<FileContent> {
     let promise = axios.post(
       this.apiurl + "/getfilecontent",
-      JSON.stringify({ path: path }),
-      { withCredentials: true }
+      JSON.stringify({ path: path, token: localStorage.getItem('authToken') })
     );
     promise.catch((err) => {
       console.error("[API][ERROR]" + err);
@@ -43,8 +42,12 @@ export class API {
   ): Promise<FolderContent> {
     let promise = axios.post(
       this.apiurl + "/fileupload",
-      JSON.stringify({ path: path, blob: blob, currentDir: dir }),
-      { withCredentials: true }
+      JSON.stringify({
+        path: path,
+        blob: blob,
+        currentDir: dir,
+        token: localStorage.getItem('authToken'),
+      })
     );
     promise.catch((err) => {
       console.error("[API][ERROR]" + err);
@@ -62,14 +65,18 @@ export class API {
   ): Promise<AxiosResponse<any, any>> {
     let promise = axios.post(
       this.apiurl + "/authenticate",
-      JSON.stringify({ username: username, password: password }),
-      { withCredentials: true }
+      JSON.stringify({
+        username: username,
+        password: password
+      })
     );
     promise.catch((err) => {
       console.error("[API][ERROR]" + err);
     });
     promise.then((resp) => {
       console.log("[API][OKAY]" + JSON.stringify(resp.data));
+      console.log(resp.data)
+      localStorage.setItem('authToken', resp.data.Token);
     });
     return promise;
   }
