@@ -18,7 +18,7 @@ A home cloud with the goal to be both simple and secure.
 
 - Add CALDAV Server [PLANNED]
 
- Add WebDAV Server Server [PLANNED]
+- Add WebDAV Server Server [PLANNED]
 
 - Implement client side file encryption/decryption [PLANNED]
 
