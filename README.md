@@ -50,7 +50,6 @@ Security will be taken very seriously in this project, as it will handle potenti
 
 Authorization will be done by expanding a PBKDF-2 Hash of the password on the client side, which will then be combined with a salt that is unique for every user and hashed again using SHA512 on the server.
 This guarantees that the plaintext password is never transferred over the network and the authentication secret is not present in the database.
-Once the authentication has been successfully completed, a RSA4096 Signed Json Web Token (JWT) will be issued to the user that completed the authentication. The JWT may then be used in further requests to authorize with the server.
 
 #### 1.2.2 File Encryption
 
@@ -58,8 +57,7 @@ Files will be Encrypted/Decrypted when a file is Uploaded/Downloaded, on the cli
 
 #### 1.2.3 Changeroot
 
-After opening a handle to the sqlite database file and reading the X509-Keypair, the application will use the
-changeroot syscall to jail itself to a 'virtual filesystem' located under fs-root/files/, where Fs-Root is the value of the --fs-root CLI variable. This mitigates the risk of users reading and writing parts of the filesystem, that they should not be interacting with.
+The application will use the changeroot syscall to jail itself to a 'virtual filesystem' located under fs-root/files/, where Fs-Root is the value of the --fs-root CLI variable. This mitigates the risk of users reading and writing parts of the filesystem, that they should not be interacting with.
 
 #### 1.2.4 Priviledge Dropping
 
