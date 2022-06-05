@@ -43,7 +43,7 @@ func toUserpath(uid uint64, requestedPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join("/"+fmt.Sprint(uid), absPath), nil
+	return filepath.Join("/files/"+fmt.Sprint(uid), absPath), nil
 }
 
 func send(writer http.ResponseWriter, value any) error {

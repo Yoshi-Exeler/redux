@@ -13,4 +13,8 @@ export class TabsPage {
       window.location.href.lastIndexOf("/") + 1
     );
   }
+
+  isAdmin(): string {
+    return localStorage.getItem("isAdmin");
+  }
 }

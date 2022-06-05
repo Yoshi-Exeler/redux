@@ -1,0 +1,30 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title> Users </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onLogout()"><ion-icon name="log-out-outline"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-list style="padding: 0; margin: 0">
+    <ion-item *ngFor="let user of users">
+      <ion-icon
+        color="primary"
+        name="person-outline"
+        style="padding-right: 0.5em"
+      ></ion-icon>
+      <ion-label>{{user.Username}}</ion-label>
+      <ion-chip *ngIf="user.IsAdmin" color="danger">Admin</ion-chip>
+      <ion-button (click)="presentAlertConfirmDelete(user)" fill="none" size="medium">
+        <ion-icon color="primary" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="add-outline"> </ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

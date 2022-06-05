@@ -35,10 +35,19 @@ type APIServer struct {
  */
 func Init(fsroot string, apiPort string, userlandUID int) {
 	once.Do(func() {
-		db, err := gorm.Open(sqlite.Open(fsroot+"/redux_db.sqlite"), &gorm.Config{})
+		fmt.Println("[Init] sqlite database handle opened")
+		if err := os.Chdir(fsroot); err != nil {
+			log.Fatal("Failed to change to new root", err)
+		}
+		fmt.Println("[Init] changed active directory into cloud root directory")
+		if err := syscall.Chroot(fsroot); err != nil {
+			log.Fatal("Failed to chroot", err)
+		}
+		db, err := gorm.Open(sqlite.Open("redux_db.sqlite"), &gorm.Config{})
 		if err != nil {
 			log.Fatal("failed to open sqlite database", err)
 		}
+		instance = &APIServer{APIPort: apiPort, DB: db}
 		db.AutoMigrate(&model.User{})
 		db.Save(&model.User{
 			Username:     "yoshi.exeler",
@@ -47,20 +56,11 @@ func Init(fsroot string, apiPort string, userlandUID int) {
 			Salt:         "cool_salt",
 			IsAdmin:      true,
 		})
-		fmt.Println("[REDUX][INIT] sqlite database handle opened")
-		instance = &APIServer{APIPort: apiPort, DB: db}
-		if err := os.Chdir(fsroot + "/files"); err != nil {
-			log.Fatal("Failed to change to new root", err)
-		}
-		fmt.Println("[REDUX][INIT] changed active directory into cloud root directory")
-		if err := syscall.Chroot(fsroot + "/files"); err != nil {
-			log.Fatal("Failed to chroot", err)
-		}
-		fmt.Printf("[REDUX][INIT] changeroot into %v\n", fsroot+"/files")
+		fmt.Printf("[Init] changeroot into %v\n", fsroot)
 		if err := syscall.Setresuid(userlandUID, userlandUID, userlandUID); err != nil {
 			log.Fatal("Failed to call setresuid", err)
 		}
-		fmt.Println("[REDUX][INIT] successfully dropped root permissions with setresuid, new uid:", os.Geteuid())
+		fmt.Println("[Init] successfully dropped root permissions with setresuid, new uid:", os.Geteuid())
 	})
 }
 
