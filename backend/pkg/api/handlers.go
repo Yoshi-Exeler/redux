@@ -117,18 +117,6 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bin))
 }
 
-func (a *APIServer) checkToken(w http.ResponseWriter, token string) (*model.User, bool) {
-	fmt.Printf("token:%+v", token)
-	var targetUser model.User
-	err := a.DB.Where("token = ?", token).First(&targetUser).Error
-	if err != nil {
-		fmt.Println("auth: could not find user")
-		w.WriteHeader(401)
-		return nil, false
-	}
-	return &targetUser, true
-}
-
 func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	req, err := readAndUnmarshallTo[model.AuthenticationRequest](r.Body)
@@ -154,7 +142,8 @@ func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	}
 	// prepare our response
 	resp := model.AuthenticationResponse{
-		Token: targetUser.Token,
+		Token:   targetUser.Token,
+		IsAdmin: targetUser.IsAdmin,
 	}
 	send(w, resp)
 }

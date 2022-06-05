@@ -69,3 +69,15 @@ func readAndUnmarshallTo[T any](reader io.Reader) (T, error) {
 	}
 	return req, nil
 }
+
+func (a *APIServer) checkToken(w http.ResponseWriter, token string) (*model.User, bool) {
+	fmt.Printf("token:%+v", token)
+	var targetUser model.User
+	err := a.DB.Where("token = ?", token).First(&targetUser).Error
+	if err != nil {
+		fmt.Println("auth: could not find user")
+		w.WriteHeader(401)
+		return nil, false
+	}
+	return &targetUser, true
+}

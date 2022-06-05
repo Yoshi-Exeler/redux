@@ -51,8 +51,8 @@ type AuthenticationRequest struct {
 }
 
 type AuthenticationResponse struct {
-	Token string
-	Error string
+	Token   string
+	IsAdmin bool
 }
 
 type ListUsersRequest struct {
