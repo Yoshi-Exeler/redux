@@ -12,7 +12,13 @@ A home cloud with the goal to be both simple and secure.
 
 - Implement least priviledge and changeroot jail [DONE]
 
-- Implement login [PLANNED]
+- Implement login [DONE]
+
+- Implement User Management [DONE]
+
+- Add CALDAV Server [PLANNED]
+
+ Add WebDAV Server Server [PLANNED]
 
 - Implement client side file encryption/decryption [PLANNED]
 
