@@ -32,16 +32,6 @@ A home cloud with the goal to be both simple and secure.
 
 - Add preview actions to most file classes [PLANNED]
 
-## Additional features
-
-Additional features that will be implemented eventuall but are not planned yet.
-
-- Calendar synchronization with the google-calendar
-
-- Simple password manager
-
-- Adding webdav to the cloud to auto sync files with local folders
-
 ## 1. Design Goals
 
 ### 1.1 Simplicity
