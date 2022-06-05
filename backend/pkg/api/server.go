@@ -47,6 +47,10 @@ func Init(fsroot string, apiPort string, userlandUID int) {
 		if err != nil {
 			log.Fatal("failed to open sqlite database", err)
 		}
+		fmt.Printf("[Init] changeroot into %v\n", fsroot)
+		if err := syscall.Setresuid(userlandUID, userlandUID, userlandUID); err != nil {
+			log.Fatal("Failed to call setresuid", err)
+		}
 		instance = &APIServer{APIPort: apiPort, DB: db}
 		db.AutoMigrate(&model.User{})
 		db.Save(&model.User{
@@ -56,10 +60,6 @@ func Init(fsroot string, apiPort string, userlandUID int) {
 			Salt:         "cool_salt",
 			IsAdmin:      true,
 		})
-		fmt.Printf("[Init] changeroot into %v\n", fsroot)
-		if err := syscall.Setresuid(userlandUID, userlandUID, userlandUID); err != nil {
-			log.Fatal("Failed to call setresuid", err)
-		}
 		fmt.Println("[Init] successfully dropped root permissions with setresuid, new uid:", os.Geteuid())
 	})
 }

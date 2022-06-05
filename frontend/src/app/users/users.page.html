@@ -2,12 +2,17 @@
   <ion-toolbar>
     <ion-title> Users </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="onLogout()"><ion-icon name="log-out-outline"></ion-icon></ion-button>
+      <ion-button (click)="onLogout()"
+        ><ion-icon name="log-out-outline"></ion-icon
+      ></ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="false">
+  <ion-refresher slot="fixed" (ionRefresh)="this.getData($event.target)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
   <ion-list style="padding: 0; margin: 0">
     <ion-item *ngFor="let user of users">
       <ion-icon
@@ -17,13 +22,17 @@
       ></ion-icon>
       <ion-label>{{user.Username}}</ion-label>
       <ion-chip *ngIf="user.IsAdmin" color="danger">Admin</ion-chip>
-      <ion-button (click)="presentAlertConfirmDelete(user)" fill="none" size="medium">
+      <ion-button
+        (click)="presentAlertConfirmDelete(user)"
+        fill="none"
+        size="medium"
+      >
         <ion-icon color="primary" name="trash-outline"></ion-icon>
       </ion-button>
     </ion-item>
   </ion-list>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button>
+    <ion-fab-button (click)="presentModal()">
       <ion-icon name="add-outline"> </ion-icon>
     </ion-fab-button>
   </ion-fab>

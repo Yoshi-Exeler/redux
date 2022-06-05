@@ -65,6 +65,21 @@ export class API {
     return result.data;
   }
 
+  static async AddUser(username: string, password: string, admin: boolean): Promise<UserList> {
+    let promise = axios.post(
+      this.apiurl + "/adduser",
+      JSON.stringify({ User: {Username: username, PasswordHash: password, IsAdmin: admin} ,token: localStorage.getItem("authToken") })
+    );
+    promise.catch((err) => {
+      console.error("[API][ERROR]" + err);
+    });
+    promise.then((resp) => {
+      console.log("[API][OKAY]" + JSON.stringify(resp.data));
+    });
+    let result = await promise;
+    return result.data;
+  }
+
   static async UploadFile(
     path: string,
     blob: string,

@@ -97,6 +97,11 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("[REDUX] request dropped, invalid path accessed:", err)
 		return
 	}
+	req.CurrentDir, err = toUserpath(user.ID, req.CurrentDir)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, invalid path accessed:", err)
+		return
+	}
 	fmt.Printf("[REDUX] writing file %v with length %v\n", "."+"/"+req.Path, len(req.Blob))
 	decoded, err := base64.StdEncoding.DecodeString(req.Blob)
 	if err != nil {
@@ -203,8 +208,12 @@ func (a *APIServer) handleAddUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("[REDUX] request dropped, non admin may not add users")
 		return
 	}
+	// generate a salt for the user
+	req.User.Salt = RandStringBytes(32)
+	// hash the password with it
+	req.User.PasswordHash = SHA256(req.User.PasswordHash + req.User.Salt)
 	// create the user
-	err = a.DB.Create(req.User).Error
+	err = a.DB.Create(&req.User).Error
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could add user:", err)
 		return
@@ -248,6 +257,12 @@ func (a *APIServer) handleRemoveUser(w http.ResponseWriter, r *http.Request) {
 	err = a.DB.Where("id = ?", req.UID).First(&targetUser).Error
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, could find target user:", err)
+		return
+	}
+	// check that the user doesnt delete himself
+	if user.ID == req.UID {
+		fmt.Println("[REDUX] request dropped, users may not delete themselves:", err)
+		w.WriteHeader(403)
 		return
 	}
 	// delete the user

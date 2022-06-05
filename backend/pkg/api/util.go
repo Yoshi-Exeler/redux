@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"path/filepath"
 	"redux/pkg/model"
@@ -43,7 +44,20 @@ func toUserpath(uid uint64, requestedPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if strings.HasPrefix(absPath, "/files/"+fmt.Sprint(uid)) {
+		absPath = strings.TrimPrefix(absPath, "/files/"+fmt.Sprint(uid))
+	}
 	return filepath.Join("/files/"+fmt.Sprint(uid), absPath), nil
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func RandStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
 
 func send(writer http.ResponseWriter, value any) error {

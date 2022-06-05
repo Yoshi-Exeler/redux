@@ -1,0 +1,45 @@
+<ion-grid class="ion-no-margin ion-no-padding">
+  <ion-row>
+    <ion-col>
+      <h1 style="padding-left: 0.5em;">Add User</h1>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <ion-list [formGroup]="fgUser" style="padding-bottom: 0">
+        <ion-item>
+          <ion-label>Username</ion-label>
+          <ion-input formControlName="username" type="text"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Password</ion-label>
+          <ion-input formControlName="password" type="password"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Administrator</ion-label>
+          <ion-checkbox formControlName="admin"></ion-checkbox>
+        </ion-item>
+        <ion-button
+          class="ion-no-padding ion-no-margin"
+          style="padding-top: 1em; display: inline-block; width: 50%; padding-top: 0;"
+          expand="full"
+          fill="solid"
+          size="large"
+          color="success"
+          (click)="addUser()"
+          >Submit</ion-button
+        >
+        <ion-button
+          class="ion-no-padding ion-no-margin"
+          style="padding-top: 1em; display: inline-block; width: 50%; padding-top: 0;"
+          expand="full"
+          fill="solid"
+          size="large"
+          color="danger"
+          (click)="close()"
+          >Cancel</ion-button
+        >
+      </ion-list>
+    </ion-col>
+  </ion-row>
+</ion-grid>
