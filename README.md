@@ -20,6 +20,8 @@ A home cloud with the goal to be both simple and secure.
 
 - Add WebDAV Server Server [PLANNED]
 
+- Add clientside PBKDF2 key derivation [PLANNED]
+
 - Implement client side file encryption/decryption [PLANNED]
 
 - Improve file upload and download api's to use url params and binary streams [PLANNED]
