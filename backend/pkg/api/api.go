@@ -142,7 +142,6 @@ func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request)
 		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
 		return
 	}
-<<<<<<< HEAD
 	user, ok := a.checkToken(w, req.Token)
 	if !ok {
 		return
@@ -152,12 +151,6 @@ func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request)
 		fmt.Println("[REDUX] request dropped, invalid path accessed:", err)
 		return
 	}
-=======
-	_, ok := a.checkToken(w, req.Token)
-	if !ok {
-		return
-	}
->>>>>>> 5079b8e1c8f7cae0e30ab31290ae39f453711bf3
 	fmt.Println("[REDUX] reading file", req.Path)
 	buff, err = ioutil.ReadFile(req.Path)
 	if err != nil {
@@ -191,7 +184,6 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
 		return
 	}
-<<<<<<< HEAD
 	user, ok := a.checkToken(w, req.Token)
 	if !ok {
 		return
@@ -201,12 +193,6 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("[REDUX] request dropped, invalid path accessed:", err)
 		return
 	}
-=======
-	_, ok := a.checkToken(w, req.Token)
-	if !ok {
-		return
-	}
->>>>>>> 5079b8e1c8f7cae0e30ab31290ae39f453711bf3
 	fmt.Printf("[REDUX] writing file %v with length %v\n", "."+"/"+req.Path, len(req.Blob))
 	decoded, err := base64.StdEncoding.DecodeString(req.Blob)
 	if err != nil {
