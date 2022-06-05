@@ -11,11 +11,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"redux/pkg/model"
 	"strings"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -93,10 +93,6 @@ func getFolderContent(path string) (*model.FolderContent, error) {
  */
 func (a *APIServer) handleGetFolderContent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	_, ok := a.checkCookie(w, r)
-	if !ok {
-		return
-	}
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot read body:", err)
@@ -107,6 +103,15 @@ func (a *APIServer) handleGetFolderContent(w http.ResponseWriter, r *http.Reques
 	err = json.Unmarshal(buff, &req)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
+		return
+	}
+	user, ok := a.checkToken(w, req.Token)
+	if !ok {
+		return
+	}
+	req.Path, err = toUserpath(user.ID, req.Path)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, invalid path accessed:", err)
 		return
 	}
 	fmt.Println("[REDUX] reading folder", req.Path)
@@ -125,10 +130,6 @@ func (a *APIServer) handleGetFolderContent(w http.ResponseWriter, r *http.Reques
  */
 func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	_, ok := a.checkCookie(w, r)
-	if !ok {
-		return
-	}
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot read body:", err)
@@ -139,6 +140,15 @@ func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request)
 	err = json.Unmarshal(buff, &req)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
+		return
+	}
+	user, ok := a.checkToken(w, req.Token)
+	if !ok {
+		return
+	}
+	req.Path, err = toUserpath(user.ID, req.Path)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, invalid path accessed:", err)
 		return
 	}
 	fmt.Println("[REDUX] reading file", req.Path)
@@ -163,10 +173,6 @@ func (a *APIServer) handleGetFileContent(w http.ResponseWriter, r *http.Request)
  */
 func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	_, ok := a.checkCookie(w, r)
-	if !ok {
-		return
-	}
 	buff, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot read body:", err)
@@ -176,6 +182,15 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(buff, &req)
 	if err != nil {
 		fmt.Println("[REDUX] request dropped, cannot unmarshall request:", err)
+		return
+	}
+	user, ok := a.checkToken(w, req.Token)
+	if !ok {
+		return
+	}
+	req.Path, err = toUserpath(user.ID, req.Path)
+	if err != nil {
+		fmt.Println("[REDUX] request dropped, invalid path accessed:", err)
 		return
 	}
 	fmt.Printf("[REDUX] writing file %v with length %v\n", "."+"/"+req.Path, len(req.Blob))
@@ -198,15 +213,12 @@ func (a *APIServer) handleFileUpload(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(bin))
 }
 
-func (a *APIServer) checkCookie(w http.ResponseWriter, req *http.Request) (*model.User, bool) {
-	authCookie, err := req.Cookie("AUHT_TOKEN")
-	if err != nil {
-		w.WriteHeader(401)
-		return nil, false
-	}
+func (a *APIServer) checkToken(w http.ResponseWriter, token string) (*model.User, bool) {
+	fmt.Printf("token:%+v", token)
 	var targetUser model.User
-	err = a.DB.Where("token = ?", authCookie.Value).First(&targetUser).Error
+	err := a.DB.Where("token = ?", token).First(&targetUser).Error
 	if err != nil {
+		fmt.Println("auth: could not find user")
 		w.WriteHeader(401)
 		return nil, false
 	}
@@ -215,8 +227,6 @@ func (a *APIServer) checkCookie(w http.ResponseWriter, req *http.Request) (*mode
 
 func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "*")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	req, err := readAndUnmarshallTo[model.AuthenticationRequest](r.Body)
 	if err != nil {
 		// add proper http response codes here later
@@ -239,16 +249,9 @@ func (a *APIServer) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// prepare our response
-	resp := model.AuthenticationResponse{}
-
-	// set the auth cookie on the users device
-	authCookie := http.Cookie{
-		Name:    "AUTH_TOKEN",
-		Value:   targetUser.Token,
-		Expires: time.Now().AddDate(1, 0, 0),
+	resp := model.AuthenticationResponse{
+		Token: targetUser.Token,
 	}
-	http.SetCookie(w, &authCookie)
-
 	send(w, resp)
 }
 
@@ -265,6 +268,15 @@ func send[T any](writer http.ResponseWriter, value T) error {
 	}
 	fmt.Fprint(writer, string(bin))
 	return nil
+}
+
+// toUserpath converts an unsafe path sepecified by a user to a path that is guaranteed to be in his user directory
+func toUserpath(uid uint64, requestedPath string) (string, error) {
+	absPath, err := filepath.Abs(requestedPath)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join("/"+fmt.Sprint(uid), absPath), nil
 }
 
 // readAndUnmarshallTo reads the reader until completion and then json unmarshalls into a variable of type T

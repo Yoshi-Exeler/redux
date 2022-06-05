@@ -18,13 +18,13 @@ export class LoginPage implements OnInit {
 
   ngOnInit(): void {
     this.fgLogin = this.formBuilder.group({
-      username: [null, [Validators.required]],
-      password: [null, [Validators.required]],
+      username: [null, []],
+      password: [null, []],
     });
   }
 
-  onLogin() {
-    API.Authenticate(
+  async onLogin() {
+    await API.Authenticate(
       this.fgLogin.value.username,
       this.fgLogin.value.password
     ).then((resp) => {
